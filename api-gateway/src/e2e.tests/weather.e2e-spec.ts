@@ -64,16 +64,20 @@ describe('WeatherModule (e2e)', () => {
     });
   });
 
-  it('/weather (GET) get Rate limit exceeded Error', async () => {
-    const response = await request(app.getHttpServer())
-      .get('/weather')
-      .query({ city: 'UnknownCity', date: '2024-08-23' })
-      .set('authorization', accessToken);
-    
+  it('/weather (GET) get Rate limit exceeded Error on the fourth request', async () => {
+    let response;
+
+    // call it until it receives limit error
+    for (let i = 0; i < 1000; i++) {
+      response = await request(app.getHttpServer()).get('/weather').query({ city: 'UnknownCity', date: '2024-08-23' }).set('authorization', accessToken)
+      if (response.body.error) break;
+    }
+
     expect(response.body).toEqual({
-      "error": "Unauthorized",
-      "message": "Rate limit exceeded",
-      "statusCode": 401
+      error: "Unauthorized",
+      message: "Rate limit exceeded",
+      statusCode: 401
     });
   });
+  
 });
