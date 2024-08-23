@@ -7,13 +7,12 @@ import { AuthModule } from "./auth/auth.module";
 import { WeatherModule } from "./weather/weather.module";
 import { RateLimiterModule } from "./rate-limiter/rate-limiter.module";
 import { LoggerModule } from "nestjs-pino";
+import { DatabaseModule } from "./database/database.module";
+import { EmailModule } from "./notification/email.module";
+import { RabbitMQModule } from "./rabbitmq/rabbitmq.module";
 
 @Module({
   imports: [
-    HealthModule, // for aws checking
-    AuthModule,
-    WeatherModule,
-    RateLimiterModule,
     ConfigModule.forRoot({
       isGlobal: true,
       validate,
@@ -24,6 +23,13 @@ import { LoggerModule } from "nestjs-pino";
         timestamp: () => `,"time":"${new Date().toISOString()}"`,
       },
     }),
+    DatabaseModule,
+    HealthModule, // for aws checking
+    AuthModule,
+    WeatherModule,
+    EmailModule,
+    RateLimiterModule,
+    RabbitMQModule,
   ],
 })
 

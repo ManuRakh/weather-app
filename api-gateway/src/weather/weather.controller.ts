@@ -11,7 +11,7 @@ export class WeatherController {
   @UseGuards(RateLimiterGuard)
   @Get()
   async getWeather(@Query('city') city: string, @Query('date') date: string, @Req() req) {
-    this.logger.log(`User ${req.user.id} requested weather for ${city} on ${date}`);
+    this.logger.log(`User ${req.user.sub} requested weather for ${city} on ${date}`);
     return this.weatherService.getWeather(city, date);
   }
 }

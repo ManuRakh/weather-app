@@ -1,34 +1,49 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { HttpService } from '@nestjs/axios';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt';
+import { LoginDto } from '../utils/dtos/user/login.dto';
+import { User } from '../utils/entities/user.entity';
 import { CreateUserDto } from '../utils/dtos/user/user.dto';
-import { Result } from 'src/utils/types/resultObjectType';
 
 @Injectable()
 export class AuthService {
-  private readonly authServiceUrl: string;
-
   constructor(
-    private readonly httpService: HttpService,
-    private readonly configService: ConfigService,
-  ) {
-    this.authServiceUrl = this.configService.get<string>('AUTH_SERVICE_URL');
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+    private readonly jwtService: JwtService,
+  ) {}
+
+  async login(loginDto: LoginDto): Promise<string | null> {
+    const { username, password } = loginDto;
+
+    const user = await this.userRepository.findOne({ where: { username } });
+
+    if (user && (await bcrypt.compare(password, user.password))) {
+      const payload = { username: user.username, sub: user.id };
+      return this.jwtService.sign(payload);
+    }
+
+    return null;
   }
 
-    async login(loginDto: any): Promise<Result> {
-    const response = await this.httpService
-      .post(`${this.authServiceUrl}/api/auth/login`, loginDto)
-      .toPromise();
+  async createUser(
+    createUserDto: CreateUserDto,
+  ): Promise<{ user: User; token: string }> {
+    const salt = await bcrypt.genSalt();
+    const hashedPassword = await bcrypt.hash(createUserDto.password, salt);
 
-    return response.data;
-    }
-    
-    async createUser(createUserDto: CreateUserDto): Promise<Result> {
-        const response = await this.httpService
-        .post(`${this.authServiceUrl}/api/auth/register`, createUserDto)
-        .toPromise();
-  
-      return response.data;
-  
-    }
+    const user = this.userRepository.create({
+      ...createUserDto,
+      password: hashedPassword,
+    });
+
+    const savedUser = await this.userRepository.save(user);
+
+    const payload = { username: savedUser.username, sub: savedUser.id };
+    const token = this.jwtService.sign(payload);
+
+    return { user: savedUser, token };
+  }
 }

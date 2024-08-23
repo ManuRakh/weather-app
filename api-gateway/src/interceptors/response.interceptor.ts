@@ -19,14 +19,31 @@ export class ResponseInterceptor<T> implements NestInterceptor<T, Response<T>> {
     return next
       .handle()
       .pipe(
-        
+        map(result => {
+          const req = context.switchToHttp().getRequest();
+
+          const method = req?.method;
+          if (result) {
+            const { result: resultArray, count } = result;
+            if (resultArray && typeof count === "number") {
+              return {
+                result: resultArray,
+                count,
+              }
+            }
+            if (method.toLowerCase() === "delete") return { result: { deleted_at: result!.deleted_at }};
+
+            return { result };
+          }
+          return { result };
+        }),
       )
       .pipe(
         catchError(err => {
           const statusCode = err.response?.statusCode || err.status || HttpStatus.INTERNAL_SERVER_ERROR;
           const errorType = err.response?.error || "Internal Server Error";
           const respMessage = Array.isArray(err.response?.message) ? err.response?.message[0] : err.response?.message;
-          const details = err.response?.details || err.response?.data?.message || {};
+          const details = err.response?.details || {};
           const message = respMessage || err.message;
           return throwError(
             () =>

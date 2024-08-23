@@ -1,27 +1,29 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { HttpService } from '@nestjs/axios';
+import { Inject, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Cache } from 'cache-manager';
+import { Weather } from '../utils/entities/weather.entity';
 
 @Injectable()
 export class WeatherService {
-    private readonly weatherServiceUrl: string;
+  constructor(
+    @InjectRepository(Weather)
+    private readonly weatherRepository: Repository<Weather>,
+    @Inject('CACHE_MANAGER') private readonly cacheManager: Cache,
+  ) {}
 
-    constructor(
-        private readonly httpService: HttpService,
-        private readonly configService: ConfigService,
-  ) {
-    this.weatherServiceUrl = this.configService.get<string>('WEATHER_SERVICE_URL');
-  }
-
-  async getWeather(city: string, date: string) {
-    const response = await this.httpService
-      .get(`${this.weatherServiceUrl}/api/weather?city=${city}&date=${date}`)
-      .toPromise();
-
-    if (!response.data?.result) {
-      throw new NotFoundException('Weather data not found');
+  async getWeather(city: string, date: string): Promise<Weather | null> {
+    const cacheKey = `weather-${city}-${date}`;
+    
+    const cachedWeather = await this.cacheManager.get<Weather>(cacheKey);
+    if (cachedWeather) {
+      return cachedWeather;
     }
 
-    return response.data;
+    const weather = await this.weatherRepository.findOne({ where: { city, date } });
+
+    await this.cacheManager.set(cacheKey, weather, 3600);
+
+    return weather;
   }
 }

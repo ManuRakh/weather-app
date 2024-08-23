@@ -7,7 +7,7 @@ export class RateLimiterGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const userId = request.user.id;
+    const userId = request.user?.sub;
 
     await this.rateLimiterService.checkLimit(userId);
 

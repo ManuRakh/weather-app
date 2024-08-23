@@ -6,6 +6,8 @@ import { HttpModule } from '@nestjs/axios';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { JwtAuthGuard } from './jwt-auth.guard';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { User } from '../utils/entities/user.entity';
 
 @Module({
   imports: [
@@ -18,6 +20,7 @@ import { JwtAuthGuard } from './jwt-auth.guard';
         signOptions: { expiresIn: '24h' },
       }),
     }),
+    TypeOrmModule.forFeature([User]),
   ],
   controllers: [AuthController],
   providers: [JwtAuthGuard, AuthService],

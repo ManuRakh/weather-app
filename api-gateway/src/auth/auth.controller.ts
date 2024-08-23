@@ -1,41 +1,40 @@
 import { Controller, Post, Body, UnauthorizedException } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginDto } from '../utils/dtos/user/login.dto';
-import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { CreateUserDto } from '../utils/dtos/user/user.dto';
 import { User } from '../utils/entities/user.entity';
-import { Public } from 'src/utils/decorators/public.decorator';
-import { Result } from 'src/utils/types/resultObjectType';
+import { Public } from '../utils/decorators/public.decorator';
 
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Post('login')
   @ApiOperation({ summary: 'Login user' })
   @ApiResponse({ status: 200, description: 'User successfully logged in.' })
   @ApiResponse({ status: 401, description: 'Invalid credentials.' })
   @ApiBody({ type: LoginDto })
   @Public()
-  @Post('login')
-  async login(@Body() loginDto: any): Promise<Result> {
-      const tokenInfo = await this.authService.login(loginDto);
-      
-    if (!tokenInfo) {
+  async login(@Body() loginDto: LoginDto) {
+    const token = await this.authService.login(loginDto);
+
+    if (!token) {
       throw new UnauthorizedException('Invalid credentials');
     }
-    return tokenInfo;
-    }
-    
-    @ApiOperation({ summary: 'Register new user' })
-    @ApiResponse({ status: 201, description: 'User successfully registered.' })
-    @ApiResponse({ status: 400, description: 'Bad request.' })
-    @ApiBody({ type: CreateUserDto })
-    @Public()
-    @Post('register')
-    async register(
-      @Body() createUserDto: CreateUserDto,
-    ): Promise<Result> {
-      return this.authService.createUser(createUserDto);
-    }
-  
+    return { accessToken: token };
+  }
+
+  @Post('register')
+  @ApiOperation({ summary: 'Register new user' })
+  @ApiResponse({ status: 201, description: 'User successfully registered.' })
+  @ApiResponse({ status: 400, description: 'Bad request.' })
+  @ApiBody({ type: CreateUserDto })
+  @Public()
+  async register(
+    @Body() createUserDto: CreateUserDto,
+  ): Promise<{ user: User; token: string }> {
+    return this.authService.createUser(createUserDto);
+  }
 }
