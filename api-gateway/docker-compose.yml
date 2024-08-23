@@ -1,0 +1,65 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: weather_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  api-gateway:
+    build: ./api-gateway
+    environment:
+      - NODE_ENV=development
+      - REDIS_HOST=redis
+      - POSTGRES_HOST=postgres
+      - RABBITMQ_HOST=rabbitmq
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+
+  auth-service:
+    build: ./auth-service
+    environment:
+      - NODE_ENV=development
+      - POSTGRES_HOST=postgres
+    depends_on:
+      - postgres
+
+  weather-service:
+    build: ./weather-service
+    environment:
+      - NODE_ENV=development
+      - POSTGRES_HOST=postgres
+      - REDIS_HOST=redis
+    depends_on:
+      - postgres
+      - redis
+
+  notifications-service:
+    build: ./notifications-service
+    environment:
+      - NODE_ENV=development
+      - RABBITMQ_HOST=rabbitmq
+      - GMAIL_USER=your-email@gmail.com
+      - GMAIL_PASS=your-email-password
+    depends_on:
+      - rabbitmq
