@@ -51,7 +51,7 @@ async function runServer() {
   await app.register(helmet, {
     contentSecurityPolicy: configService.get('env') === 'prod',
   });
-  await app.register(fastifyCookie as any);
+  await app.register(fastifyCookie);
   await app.register(fastifyCsrf);
 
   await app.listen(port, '0.0.0.0');

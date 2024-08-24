@@ -1,7 +1,5 @@
 import { Type, plainToInstance } from "class-transformer";
-import { IsNumber, validateSync, IsUrl, IsString, IsEmail } from "class-validator";
-
-const parseBoolean = ({ value }) => value && /^(true|yes)$/i.test(value);
+import { IsNumber, validateSync, IsString, IsEmail } from "class-validator";
 
 class EnvironmentVariables {
   @IsNumber()

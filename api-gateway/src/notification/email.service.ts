@@ -21,7 +21,7 @@ export class EmailService {
     this.logger = logger;
   }
 
-  async sendEmail(data: any) {
+  async sendEmail(data: { userId: string, userLimit: number }) {
     try {
       const { userLimit, userId } = data;
       const subject = 'User has reached its limits';

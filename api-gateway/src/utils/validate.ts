@@ -8,7 +8,7 @@ import { BadRequestException, NotFoundException } from "@nestjs/common";
  * @returns
  */
 export const validateFields = (data: Object, objectName: string): boolean => {
-  const errors: String[] = [];
+  const errors: string[] = [];
   for (const field in data) {
     if (field === "_id") errors.push(`${field} could not be set or modified`);
     if (data.hasOwnProperty(field) && data[field] === null)

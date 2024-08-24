@@ -45,7 +45,6 @@ describe('AuthController (e2e)', () => {
   });
 
   it('/auth/login (POST) should log in a user and return a token', async () => {
-    // Создание пользователя в базе данных
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(testpassword, salt);
 
@@ -55,7 +54,6 @@ describe('AuthController (e2e)', () => {
     });
     await userRepository.save(user);
 
-    // Выполнение запроса на логин
     const loginResponse = await request(app.getHttpServer())
       .post('/auth/login')
       .send({

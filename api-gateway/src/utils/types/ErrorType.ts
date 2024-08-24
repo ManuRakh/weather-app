@@ -1,13 +1,13 @@
 export type ErrorType = {
   name: string;
-  message: any;
+  message: string;
   stack: string;
   isAxiosError?: boolean;
   [x: string]: any;
   fhm_isRestifyClientError?: boolean;
-  meta: any;
+  meta: string;
   toJSON?: boolean;
-  code: any;
-  data?: Record<string, any>;
-  body?: string | Record<string, any>;
+  code: string;
+  data?: Record<string, string>;
+  body?: string | Record<string, string>;
 };

@@ -22,7 +22,7 @@ const processErrorMessage = (errorMessage, constraints, childrens) => {
     }
 
     if (childrens?.length) {
-      let modifiedErrorMessage = JSON.parse(JSON.stringify(errorMessage));
+      const modifiedErrorMessage = JSON.parse(JSON.stringify(errorMessage));
 
       if (modifiedErrorMessage.property) propertyNumber = Number.parseInt(modifiedErrorMessage.property);
 
