@@ -64,12 +64,27 @@ describe('WeatherModule (e2e)', () => {
     });
   });
 
-  it('/weather (GET) get Rate limit exceeded Error on the fourth request', async () => {
+  it('/weather (GET) should return not found error', async () => {
+    const weatherData = weatherRepository.create({
+      city: cityName,
+      date: '2024-08-23',
+      temperature: 25,
+      condition: 'Sunny',
+    });
+    await weatherRepository.save(weatherData);
+
+    await request(app.getHttpServer())
+      .get('/weather')
+      .query({ city: 'wrongcityname', date: '2024-08-23' })
+      .set('authorization', accessToken).expect(404);
+  });
+
+  it('/weather (GET) get Rate limit exceeded Error on reaching requests limits', async () => {
     let response;
 
     // call it until it receives limit error
     for (let i = 0; i < 1000; i++) {
-      response = await request(app.getHttpServer()).get('/weather').query({ city: 'UnknownCity', date: '2024-08-23' }).set('authorization', accessToken)
+      response = await request(app.getHttpServer()).get('/weather').query({ city: cityName, date: '2024-08-23' }).set('authorization', accessToken)
       if (response.body.error) break;
     }
 

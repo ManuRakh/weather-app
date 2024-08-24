@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Cache } from 'cache-manager';
@@ -22,6 +22,7 @@ export class WeatherService {
 
     const weather = await this.weatherRepository.findOne({ where: { city, date } });
 
+    if (!weather) throw new NotFoundException("Weather information with the given data was not found")
     await this.cacheManager.set(cacheKey, weather, 3600);
 
     return weather;

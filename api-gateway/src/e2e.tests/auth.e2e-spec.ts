@@ -61,7 +61,7 @@ describe('AuthController (e2e)', () => {
       .send({
         username: testUser,
         password: testpassword,
-      })
+      }).expect(200);
 
     expect(loginResponse.body).toHaveProperty('accessToken');
   });

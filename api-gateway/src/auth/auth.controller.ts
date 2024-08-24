@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UnauthorizedException } from '@nestjs/common';
+import { Controller, Post, Body, UnauthorizedException, HttpCode, BadRequestException } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginDto } from '../utils/dtos/user/login.dto';
@@ -16,6 +16,7 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'User successfully logged in.' })
   @ApiResponse({ status: 401, description: 'Invalid credentials.' })
   @ApiBody({ type: LoginDto })
+  @HttpCode(200)
   @Public()
   async login(@Body() loginDto: LoginDto) {
     const token = await this.authService.login(loginDto);
@@ -31,10 +32,11 @@ export class AuthController {
   @ApiResponse({ status: 201, description: 'User successfully registered.' })
   @ApiResponse({ status: 400, description: 'Bad request.' })
   @ApiBody({ type: CreateUserDto })
+  @HttpCode(200)
   @Public()
   async register(
     @Body() createUserDto: CreateUserDto,
-  ): Promise<{ user: User; token: string }> {
-    return this.authService.createUser(createUserDto);
+  ): Promise<{ user: User; token: string }> {   
+      return this.authService.createUser(createUserDto);
   }
 }
